@@ -1,0 +1,26 @@
+Metadata-Version: 2.4
+Name: wmark
+Version: 0.1.0
+Summary: Minimal text watermarking toolkit (soft greenlist + hash buckets) for LLM outputs
+Author-email: Liu Sicheng & ChatGPT <example@example.com>
+License: MIT
+Keywords: watermark,LLM,NLP,security,detection
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: torch>=2.0.0
+Requires-Dist: transformers>=4.41.0
+Requires-Dist: scipy>=1.10.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+Dynamic: license-file
+
+# wmark
+
+Minimal LLM watermarking toolkit...
