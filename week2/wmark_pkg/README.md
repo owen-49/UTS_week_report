@@ -1,3 +1,0 @@
-# wmark
-
-Minimal LLM watermarking toolkit...

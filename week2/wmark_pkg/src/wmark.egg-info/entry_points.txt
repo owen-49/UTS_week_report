@@ -1,3 +1,0 @@
-[console_scripts]
-wm-detect = wmark.cli:main_detect
-wm-generate = wmark.cli:main_generate
