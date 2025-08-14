@@ -355,30 +355,30 @@ class WatermarkRunner:
 
                 # —— 护栏：连续标点时优先从“非标点”采样 ——
                 # —— 护栏：连续标点时优先从“非标点”采样 —— 
-                    punct_mask = self._punct_mask(probs.shape[-1])   # bool 向量：True 表示该 token 是标点（含空格+标点形态）
+                punct_mask = self._punct_mask(probs.shape[-1])   # bool 向量：True 表示该 token 是标点（含空格+标点形态）
 
                     # 最近是否“连续标点”：
                     # 1) 最近两个 token 都在 punct_ids
                     # 2) 或者形态是 [空格, 标点] / [空格+标点, 标点] 等复合情况，我们用 punct_mask 直接判断最后两个是否都是“标点类”
-                    last_two_punct = False
-                    if len(all_ids) >= 2:
-                        a, b = all_ids[-1], all_ids[-2]
+                last_two_punct = False
+                if len(all_ids) >= 2:
+                    a, b = all_ids[-1], all_ids[-2]
                         # 使用 punct_mask 直接判断，而不是只靠“裸标点表”
-                        last_two_punct = (
+                    last_two_punct = (
                             (0 <= a < punct_mask.numel() and punct_mask[a].item()) and
                             (0 <= b < punct_mask.numel() and punct_mask[b].item())
                         )
 
-                    nonpunct_sum = (probs[~punct_mask]).sum()
+                nonpunct_sum = (probs[~punct_mask]).sum()
 
-                    if last_two_punct and nonpunct_sum > 0:
+                if last_two_punct and nonpunct_sum > 0:
                         # 只在非标点上采样（把标点概率清零后重归一化）
                         filtered = torch.zeros_like(probs)
                         filtered[~punct_mask] = probs[~punct_mask]
                         s2 = filtered.sum()
                         if s2 > 0 and torch.isfinite(s2):
                             probs = filtered / s2
-                    elif nonpunct_sum == 0:
+                elif nonpunct_sum == 0:
                         # 极端情况：top-k/top-p 之后全是标点；退回到 logits，在“非标点子集”里取最大者
                         nonpunct_idx = (~punct_mask).nonzero(as_tuple=False).flatten()
                         if nonpunct_idx.numel() > 0:
