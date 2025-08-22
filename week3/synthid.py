@@ -1,4 +1,3 @@
-# synthid_text.py
 import math
 import hmac
 import hashlib
