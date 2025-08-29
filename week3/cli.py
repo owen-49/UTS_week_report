@@ -9,9 +9,7 @@ def auto_device(name: str):
     if name == "auto":
         if torch.cuda.is_available():
             return "cuda"
-        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-            return "mps"
-        return "cpu"
+        return "cpu"  # 避开 MPS，默认用 CPU 更稳
     return name
 
 def parse_dtype(name: str | None):
