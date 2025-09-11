@@ -1,0 +1,83 @@
+# 9.5-9.12学习周报  
+---
+
+## 本周学习内容
+
+### 1. 微调 (Fine-tuning) 技术综述
+- **背景**：大模型（BERT、GPT、ViT 等）预训练参数动辄上亿，全量微调代价高，难以在多任务中高效复用。  
+- **目标**：通过 **参数高效微调 (PEFT, Parameter-Efficient Fine-Tuning)** 技术，在保持性能的同时显著降低参数更新和存储开销。  
+
+---
+
+### 2. 微调方法类别
+
+#### (1) 全量微调 (Full Fine-tuning)
+- 更新模型 **全部参数** + 新增任务头。  
+- **优点**：效果最佳，任务适配性强。  
+- **缺点**：计算和存储开销大，难以多任务共存。  
+- **适用场景**：数据充足、对精度要求极高的任务。  
+
+#### (2) 部分层微调 (Partial Fine-tuning)
+- **冻结底层层数**（如前 6 层 Transformer），只更新高层 + 分类头。  
+- **优点**：减少计算需求，避免过拟合。  
+- **缺点**：可能损失部分任务性能。  
+- **适用场景**：小数据集、算力有限的任务。  
+
+#### (3) 特征提取 (Feature-based)
+- 将预训练模型作为 **特征提取器**，不更新其参数。  
+- **流程**：取 [CLS] 或平均池化的 embedding → 训练一个浅层分类器。  
+- **优点**：效率高，适合快速实验。  
+- **缺点**：适配性最弱，效果通常不如全量微调。  
+
+#### (4) 参数高效微调 (PEFT)
+- **Adapter**：在 Transformer 层内插入小型瓶颈模块，仅更新这些模块。  
+- **LoRA (Low-Rank Adaptation)**：在权重矩阵上引入低秩分解，只训练低秩部分。  
+- **Prompt / Prefix Tuning**：训练输入侧的“虚拟 token”，冻结主模型。  
+- **BitFit**：仅更新偏置参数。  
+
+---
+
+### 3. 微调实践技巧
+- **学习率**：一般 2e-5~5e-5，小于从零训练。  
+- **层级学习率衰减**：底层小、高层大，防止破坏通用表征。  
+- **正则化**：Dropout、权重衰减。  
+- **早停 (Early Stopping)**：防止过拟合。  
+- **冻结策略**：数据不足时可冻结更多层。  
+
+---
+
+### 4. 本周论文调研
+
+#### (1) *Parameter-Efficient Fine-Tuning in Large Models: A Survey of Methodologies* (2024, arXiv)  
+- **内容**：系统回顾 PEFT 方法，包括 Adapter、LoRA、Prompt Tuning、BitFit 等。  
+- **要点**：  
+  - 参数更新量差别：Adapter (~3-5%) > LoRA (~0.5-2%) > Prompt (~0.1-0.5%) > BitFit (~0.1%)。  
+  - 性能与适配性存在 trade-off，全量微调性能最佳，但 PEFT 在多数任务上接近。  
+  - 应用方向：跨任务迁移、多语言、多模态。   
+
+#### (2) *A Survey on Prompt Tuning* (2025, arXiv)  
+- **内容**：专门讨论 Prompt / Soft-Prompt / 连续提示 (continuous prompt) 技术。  
+- **要点**：  
+  - 核心思想：通过输入 token 调整任务需求，冻结模型主干。  
+  - Soft-Prompt 与 Prefix Tuning 将可训练参数嵌入 embedding 层，存储开销极低。  
+  - 多任务环境下效果突出（不同任务只需存储不同 prompt）。    
+
+#### (3) *Dynamic Adaptation of LoRA Fine-Tuning for Efficient and Task-Specific Optimization* (2025, arXiv)  
+- **内容**：提出 **动态 LoRA (Dynamic LoRA)**，对不同层按重要性分配不同的低秩参数 rank。  
+- **要点**：  
+  - 传统 LoRA 每层 rank 固定 → 可能浪费资源。  
+  - 动态 LoRA 在高贡献层分配更多参数，在低贡献层减少参数。  
+  - 在相同参数预算下，性能显著提升。    
+
+---
+
+## 三篇论文对比表
+
+| 论文                                                         | 方法焦点                                      | 优点                               | 缺点                                | 适用场景               |
+| ------------------------------------------------------------ | --------------------------------------------- | ---------------------------------- | ----------------------------------- | ---------------------- |
+| *Parameter-Efficient Fine-Tuning in Large Models: A Survey of Methodologies* (2024) | 全面综述 PEFT (Adapter, LoRA, Prompt, BitFit) | 系统性强，方法全景                 | 偏综述，缺少实证细节                | 入门/建立整体框架      |
+| *A Survey on Prompt Tuning* (2025)                           | Prompt/Soft-Prompt/Prefix Tuning              | 参数极少，存储开销低，多任务适配快 | Prompt 稳定性有限，性能略逊全量微调 | 多任务/少样本/快速迁移 |
+| *Dynamic Adaptation of LoRA Fine-Tuning* (2025)              | 动态 LoRA：层级资源自适应                     | 更高效，性能提升明显               | 设计复杂，需层重要性评估            | 任务差异化明显的场景   |
+
+---
+
